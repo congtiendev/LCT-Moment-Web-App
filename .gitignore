@@ -50,6 +50,7 @@ uploads/*
 # Temporary files
 tmp/
 temp/
+nul
 *.tmp
 
 # Docker

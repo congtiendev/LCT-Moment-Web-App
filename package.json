@@ -1,7 +1,7 @@
 {
-  "name": "lct-nodejs-core",
+  "name": "lct-locket-web-app",
   "version": "1.0.0",
-  "description": "LCT Node.js Core - Enterprise-grade Node.js REST API",
+  "description": "LCT Locket Web App - Enterprise-grade Node.js REST API with Mail Integration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,6 +16,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
+    "seed": "node prisma/seeds/seed.js",
     "prisma:seed": "node prisma/seeds/seed.js",
     "prisma:reset": "node scripts/reset-db.js",
     "docker:dev": "docker-compose up -d",

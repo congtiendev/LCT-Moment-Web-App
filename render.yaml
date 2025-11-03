@@ -1,16 +1,16 @@
 services:
   - type: web
-    name: lct-nodejs-core
+    name: lct-locket-web-app
     env: node
     region: singapore
     plan: free
-    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy
+    buildCommand: npm ci && npx prisma generate
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: APP_NAME
-        value: LCT-NODEJS-CORE
+        value: LCT-Locket-Web-App
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
@@ -22,19 +22,31 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 30d
       - key: DISABLE_REDIS
-        value: "true"
+        value: 'true'
       - key: STORAGE_DRIVER
         value: local
       - key: UPLOAD_PATH
         value: ./uploads
       - key: RATE_LIMIT_WINDOW_MS
-        value: "900000"
+        value: '900000'
       - key: RATE_LIMIT_MAX_REQUESTS
-        value: "100"
+        value: '100'
       - key: DEFAULT_PAGE_SIZE
-        value: "20"
+        value: '20'
       - key: MAX_PAGE_SIZE
-        value: "100"
+        value: '100'
       - key: LOG_LEVEL
         value: info
-    healthCheckPath: /
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: '587'
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: 'LCT Support'
+    healthCheckPath: /api/health
