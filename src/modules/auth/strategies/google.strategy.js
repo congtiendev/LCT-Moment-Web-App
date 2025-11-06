@@ -8,15 +8,26 @@ const prisma = new PrismaClient();
 /**
  * Google OAuth Strategy Configuration
  * Handles authentication via Google OAuth 2.0
+ * Only initialized if Google OAuth credentials are configured
  */
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      passReqToCallback: true,
-    },
+
+// Check if Google OAuth is configured
+const isGoogleOAuthEnabled =
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CALLBACK_URL;
+
+if (isGoogleOAuthEnabled) {
+  logger.info('Google OAuth is enabled - initializing strategy');
+
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+        passReqToCallback: true,
+      },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
         logger.info(`Google OAuth callback received for: ${profile.emails[0].value}`);
@@ -82,38 +93,41 @@ passport.use(
         return done(error, null);
       }
     }
-  )
-);
+    )
+  );
 
-/**
- * Serialize user for session
- */
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+  /**
+   * Serialize user for session
+   */
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
 
-/**
- * Deserialize user from session
- */
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        status: true,
-        provider: true,
-      },
-    });
+  /**
+   * Deserialize user from session
+   */
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          avatar: true,
+          status: true,
+          provider: true,
+        },
+      });
 
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
+} else {
+  logger.warn('Google OAuth is disabled - missing environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)');
+}
 
 module.exports = passport;
