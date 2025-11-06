@@ -1,3 +1,7 @@
+// Prisma Schema for Locket Web App
+// Database: PostgreSQL
+// Version: 1.0.0
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,65 +11,240 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  USER
-  ADMIN
-  MODERATOR
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-}
-
-enum TokenType {
-  REFRESH
-  EMAIL_VERIFICATION
-  PASSWORD_RESET
-}
+// ==================== ENUMS ====================
 
 enum AuthProvider {
-  LOCAL
-  GOOGLE
+  email
+  google
 }
 
-model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  password      String?
-  name          String
-  role          UserRole      @default(USER)
-  avatar        String?
-  phone         String?
-  status        UserStatus    @default(ACTIVE)
-  emailVerified Boolean       @default(false)
-  provider      AuthProvider  @default(LOCAL)
-  googleId      String?       @unique
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+enum FriendRequestStatus {
+  pending
+  accepted
+  rejected
+}
 
-  tokens        Token[]
+enum NotificationType {
+  friend_request
+  photo_uploaded
+  reaction
+  message
+}
+
+// ==================== MODELS ====================
+
+// 1. USERS TABLE (9 columns)
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String?       // Nullable for Google OAuth
+  name         String
+  username     String?       @unique
+  avatar       String?
+  bio          String?
+  provider     AuthProvider  @default(email)
+  googleId     String?       @unique @map("google_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  lastLoginAt  DateTime?     @map("last_login_at")
+
+  // Relations
+  settings         UserSettings?
+  photos           Photo[]
+  photoReactions   PhotoReaction[]
+  friendships      Friendship[]     @relation("UserFriendships")
+  friendsOf        Friendship[]     @relation("FriendOfUser")
+  sentRequests     FriendRequest[]  @relation("SentRequests")
+  receivedRequests FriendRequest[]  @relation("ReceivedRequests")
+  sentChats        Chat[]           @relation("SentChats")
+  receivedChats    Chat[]           @relation("ReceivedChats")
+  notifications    Notification[]
+  refreshTokens    RefreshToken[]
 
   @@index([email])
-  @@index([role])
-  @@index([status])
+  @@index([username])
   @@index([googleId])
   @@map("users")
 }
 
-model Token {
-  id        String    @id @default(uuid())
-  token     String    @unique
-  type      TokenType
-  userId    String
-  revoked   Boolean   @default(false)
-  expiresAt DateTime
-  createdAt DateTime  @default(now())
+// 2. USER SETTINGS TABLE (14 columns)
+model UserSettings {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Privacy settings
+  isPrivate         Boolean  @default(false) @map("is_private")
+  allowFriendPhotos Boolean  @default(true) @map("allow_friend_photos")
+
+  // Notification settings
+  notifyFriendRequest Boolean  @default(true) @map("notify_friend_request")
+  notifyPhotoUploaded Boolean  @default(true) @map("notify_photo_uploaded")
+  notifyReaction      Boolean  @default(true) @map("notify_reaction")
+  notifyMessage       Boolean  @default(true) @map("notify_message")
+  notifyEmail         Boolean  @default(false) @map("notify_email")
+
+  // Display settings
+  language String   @default("en")
+  theme    String   @default("light")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// 3. PHOTOS TABLE (11 columns)
+model Photo {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  imageUrl  String   @map("image_url")
+  caption   String?
+
+  // Metadata
+  width     Int?
+  height    Int?
+  fileSize  Int?     @map("file_size")
+  mimeType  String?  @map("mime_type")
+
+  isPublic  Boolean  @default(true) @map("is_public")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  expiresAt DateTime? @map("expires_at")
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions PhotoReaction[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("photos")
+}
+
+// 4. PHOTO REACTIONS TABLE (5 columns)
+model PhotoReaction {
+  id        String   @id @default(uuid())
+  photoId   String   @map("photo_id")
+  userId    String   @map("user_id")
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, userId]) // 1 reaction per user per photo
+  @@index([photoId])
+  @@index([userId])
+  @@map("photo_reactions")
+}
+
+// 5. FRIENDSHIPS TABLE (7 columns)
+model Friendship {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  friendId   String   @map("friend_id")
+  isFavorite Boolean  @default(false) @map("is_favorite")
+  nickname   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendOfUser", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId]) // No duplicates
+  @@index([userId])
+  @@index([friendId])
+  @@map("friendships")
+}
+
+// 6. FRIEND REQUESTS TABLE (7 columns)
+model FriendRequest {
+  id          String              @id @default(uuid())
+  senderId    String              @map("sender_id")
+  receiverId  String              @map("receiver_id")
+  status      FriendRequestStatus @default(pending)
+  message     String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  respondedAt DateTime?           @map("responded_at")
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId]) // No duplicates
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("friend_requests")
+}
+
+// 7. CHATS TABLE (9 columns)
+model Chat {
+  id         String    @id @default(uuid())
+  senderId   String    @map("sender_id")
+  receiverId String    @map("receiver_id")
+  message    String?
+  imageUrl   String?   @map("image_url")
+  isRead     Boolean   @default(false) @map("is_read")
+  readAt     DateTime? @map("read_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  sender   User @relation("SentChats", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedChats", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("chats")
+}
+
+// 8. NOTIFICATIONS TABLE (11 columns)
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  type       NotificationType
+  title      String
+  message    String?
+  imageUrl   String?          @map("image_url")
+  actionUrl  String?          @map("action_url")
+  actionData Json?            @map("action_data")
+  isRead     Boolean          @default(false) @map("is_read")
+  readAt     DateTime?        @map("read_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// 9. REFRESH TOKENS TABLE (12 columns)
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+
+  // Device info
+  deviceId   String?   @map("device_id")
+  deviceName String?   @map("device_name")
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+
+  isRevoked  Boolean   @default(false) @map("is_revoked")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])
-  @@map("tokens")
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
