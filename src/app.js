@@ -30,13 +30,31 @@ app.use(
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://congtiendev-locket-web.figma.site',
-    'https://lct-locket-web-app.onrender.com',
-    process.env.FRONTEND_URL,
-  ].filter(Boolean), // Remove undefined values
+  origin(origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://lct-locket-web-app.onrender.com',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Check if origin ends with .figma.site
+    if (origin.endsWith('.figma.site')) {
+      return callback(null, true);
+    }
+
+    // Reject other origins
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-refresh-token'],
