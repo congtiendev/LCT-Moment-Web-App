@@ -103,8 +103,8 @@ class UserService {
    * Search users (public)
    */
   async searchUsers(query, { limit = 20, offset = 0 }) {
-    if (!query || query.length < 2) {
-      throw new AppException('Search query must be at least 2 characters', 400);
+    if (!query || query.length < 1) {
+      throw new AppException('Search query is required', 400);
     }
 
     const users = await userRepository.searchUsers(query, { limit, offset });
@@ -114,6 +114,8 @@ class UserService {
         id: user.id,
         name: user.name,
         username: user.username,
+        email: user.email,
+        phone: user.phone,
         avatar: user.avatar,
         bio: user.bio,
       })),

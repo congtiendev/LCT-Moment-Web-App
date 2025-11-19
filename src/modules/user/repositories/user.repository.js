@@ -65,7 +65,7 @@ class UserRepository {
   }
 
   /**
-   * Search users by name, username, or email
+   * Search users by name, username, email, or phone
    */
   async searchUsers(query, { limit = 20, offset = 0 }) {
     return prisma.user.findMany({
@@ -74,6 +74,7 @@ class UserRepository {
           { name: { contains: query, mode: 'insensitive' } },
           { username: { contains: query, mode: 'insensitive' } },
           { email: { contains: query, mode: 'insensitive' } },
+          { phone: { contains: query } },
         ],
         status: 'ACTIVE', // Only search active users
       },
@@ -83,6 +84,8 @@ class UserRepository {
         username: true,
         avatar: true,
         bio: true,
+        email: true,
+        phone: true,
       },
       take: limit,
       skip: offset,
