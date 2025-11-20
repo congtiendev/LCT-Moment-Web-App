@@ -111,6 +111,19 @@ class FriendRepository {
         },
       },
       data,
+      include: {
+        friend: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            username: true,
+            avatar: true,
+            bio: true,
+            status: true,
+          },
+        },
+      },
     });
   }
 
