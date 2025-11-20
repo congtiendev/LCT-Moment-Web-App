@@ -61,6 +61,7 @@ class PhotoViewService {
 
     return {
       viewers: views.map((v) => ({
+        user_id: v.userId,
         user: v.user
           ? {
               id: v.user.id,
@@ -70,6 +71,7 @@ class PhotoViewService {
             }
           : null,
         viewed_at: v.createdAt,
+        reaction: v.reaction || null,
       })),
       pagination: {
         total,

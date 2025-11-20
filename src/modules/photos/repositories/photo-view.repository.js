@@ -46,9 +46,10 @@ class PhotoViewRepository {
 
   /**
    * Get list of users who viewed a photo
+   * Includes their reaction if they reacted to the photo
    */
   async findByPhotoId(photoId, { limit = 50, offset = 0 }) {
-    return await prisma.photoView.findMany({
+    const views = await prisma.photoView.findMany({
       where: { photoId },
       take: limit,
       skip: offset,
@@ -64,6 +65,31 @@ class PhotoViewRepository {
         },
       },
     });
+
+    // Get reactions for all viewers in one query
+    const viewerIds = views.map((v) => v.userId);
+    const reactions = await prisma.photoReaction.findMany({
+      where: {
+        photoId,
+        userId: { in: viewerIds },
+      },
+      select: {
+        userId: true,
+        emoji: true,
+      },
+    });
+
+    // Create a map of userId -> emoji for quick lookup
+    const reactionMap = {};
+    reactions.forEach((r) => {
+      reactionMap[r.userId] = r.emoji;
+    });
+
+    // Add reaction to each view
+    return views.map((view) => ({
+      ...view,
+      reaction: reactionMap[view.userId] || null,
+    }));
   }
 
   /**
