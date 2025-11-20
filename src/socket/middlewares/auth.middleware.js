@@ -14,13 +14,24 @@ const socketAuthMiddleware = async (socket, next) => {
       socket.handshake.headers?.authorization?.replace('Bearer ', '') ||
       socket.handshake.query?.token;
 
+    logger.info('🔍 Socket auth attempt:');
+    logger.info(`  - Token present: ${!!token}`);
+    logger.info(`  - Token length: ${token?.length || 0}`);
+    logger.info(`  - Token preview: ${token?.substring(0, 50)}...`);
+
     if (!token) {
       logger.warn('Socket connection rejected: No token provided');
       return next(new Error('Authentication error: No token provided'));
     }
 
     // Verify token
+    logger.info(`  - Verifying with secret: ${config.jwt.accessTokenSecret?.substring(0, 10)}...`);
     const decoded = jwt.verify(token, config.jwt.accessTokenSecret);
+
+    logger.info('✅ Token decoded successfully:');
+    logger.info(`  - userId: ${decoded.userId}`);
+    logger.info(`  - iat: ${decoded.iat}`);
+    logger.info(`  - exp: ${decoded.exp}`);
 
     // Attach user info to socket
     socket.userId = decoded.userId;
@@ -29,7 +40,10 @@ const socketAuthMiddleware = async (socket, next) => {
     logger.info(`Socket authenticated: User ${decoded.userId}`);
     next();
   } catch (error) {
-    logger.error('Socket authentication error:', error.message);
+    logger.error('❌ Socket authentication error:');
+    logger.error(`  - Error name: ${error.name}`);
+    logger.error(`  - Error message: ${error.message}`);
+    logger.error(`  - Stack: ${error.stack}`);
     next(new Error('Authentication error: Invalid token'));
   }
 };
