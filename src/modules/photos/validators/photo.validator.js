@@ -75,10 +75,19 @@ const getReactionsQuerySchema = Joi.object({
   offset: Joi.number().integer().min(0).default(0),
 });
 
+/**
+ * Get viewers query validation
+ */
+const getViewersQuerySchema = Joi.object({
+  limit: Joi.number().integer().min(1).max(100).default(50),
+  offset: Joi.number().integer().min(0).default(0),
+});
+
 module.exports = {
   validateUploadPhoto: validate(uploadPhotoSchema, 'body'),
   validateGetPhotosQuery: validate(getPhotosQuerySchema, 'query'),
   validatePhotoId: validate(photoIdSchema, 'params'),
   validateAddReaction: validate(addReactionSchema, 'body'),
   validateGetReactionsQuery: validate(getReactionsQuerySchema, 'query'),
+  validateGetViewersQuery: validate(getViewersQuerySchema, 'query'),
 };

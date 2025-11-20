@@ -7,9 +7,44 @@ const prisma = new PrismaClient();
  */
 class PhotoRepository {
   /**
+   * Common include for photo queries
+   */
+  getPhotoInclude() {
+    return {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          username: true,
+          avatar: true,
+          bio: true,
+        },
+      },
+      reactions: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              avatar: true,
+            },
+          },
+        },
+      },
+      views: {
+        select: {
+          userId: true,
+        },
+      },
+    };
+  }
+
+  /**
    * Find photo by ID
    */
-  async findById(photoId, includeUser = true, includeReactions = true) {
+  async findById(photoId, includeUser = true, includeReactions = true, includeViews = true) {
     return await prisma.photo.findUnique({
       where: { id: photoId },
       include: {
@@ -39,6 +74,13 @@ class PhotoRepository {
               },
             }
           : false,
+        views: includeViews
+          ? {
+              select: {
+                userId: true,
+              },
+            }
+          : false,
       },
     });
   }
@@ -52,30 +94,7 @@ class PhotoRepository {
       take: limit,
       skip: offset,
       orderBy: { createdAt: order },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            username: true,
-            avatar: true,
-            bio: true,
-          },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
+      include: this.getPhotoInclude(),
     });
   }
 
@@ -113,30 +132,7 @@ class PhotoRepository {
       take: limit,
       skip: offset,
       orderBy: { createdAt: order },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            username: true,
-            avatar: true,
-            bio: true,
-          },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
+      include: this.getPhotoInclude(),
     });
   }
 

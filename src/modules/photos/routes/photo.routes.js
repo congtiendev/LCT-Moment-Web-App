@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const photoController = require('../controllers/photo.controller');
 const reactionController = require('../controllers/reaction.controller');
+const photoViewController = require('../controllers/photo-view.controller');
 const debugController = require('../controllers/debug.controller');
 const { authenticate } = require('@middlewares/authenticate.middleware');
 const upload = require('../middlewares/photo-upload.middleware');
@@ -11,6 +12,7 @@ const {
   validatePhotoId,
   validateAddReaction,
   validateGetReactionsQuery,
+  validateGetViewersQuery,
 } = require('../validators/photo.validator');
 
 /**
@@ -56,6 +58,22 @@ router.get(
   validatePhotoId,
   validateGetReactionsQuery,
   reactionController.getReactions
+);
+
+// View tracking routes
+router.post(
+  '/:photoId/views',
+  authenticate,
+  validatePhotoId,
+  photoViewController.recordView
+);
+
+router.get(
+  '/:photoId/views',
+  authenticate,
+  validatePhotoId,
+  validateGetViewersQuery,
+  photoViewController.getViewers
 );
 
 module.exports = router;

@@ -173,7 +173,7 @@ class PhotoService {
   }
 
   /**
-   * Format photo response with reactions
+   * Format photo response with reactions and views
    */
   formatPhotoResponse(photo, currentUserId) {
     const reactionsSummary = {};
@@ -192,6 +192,12 @@ class PhotoService {
         }
       });
     }
+
+    // Count views
+    const viewsCount = photo.views ? photo.views.length : 0;
+    const hasViewed = photo.views
+      ? photo.views.some((view) => view.userId === currentUserId)
+      : false;
 
     return {
       id: photo.id,
@@ -219,6 +225,8 @@ class PhotoService {
       reactions: reactionsSummary,
       my_reaction: myReaction,
       reactions_count: reactionsCount,
+      views_count: viewsCount,
+      has_viewed: hasViewed,
     };
   }
 }

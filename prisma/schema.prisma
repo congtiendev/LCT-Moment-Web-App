@@ -67,6 +67,7 @@ model User {
   settings         UserSettings?
   photos           Photo[]
   photoReactions   PhotoReaction[]
+  photoViews       PhotoView[]
   friendships      Friendship[]     @relation("UserFriendships")
   friendsOf        Friendship[]     @relation("FriendOfUser")
   sentRequests     FriendRequest[]  @relation("SentRequests")
@@ -131,6 +132,7 @@ model Photo {
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reactions PhotoReaction[]
+  views     PhotoView[]
 
   @@index([userId])
   @@index([createdAt])
@@ -154,7 +156,23 @@ model PhotoReaction {
   @@map("photo_reactions")
 }
 
-// 5. FRIENDSHIPS TABLE (7 columns)
+// 5. PHOTO VIEWS TABLE (4 columns)
+model PhotoView {
+  id        String   @id @default(uuid())
+  photoId   String   @map("photo_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, userId]) // Track unique views per user
+  @@index([photoId])
+  @@index([userId])
+  @@map("photo_views")
+}
+
+// 6. FRIENDSHIPS TABLE (7 columns)
 model Friendship {
   id         String   @id @default(uuid())
   userId     String   @map("user_id")
