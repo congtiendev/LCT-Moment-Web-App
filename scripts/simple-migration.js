@@ -65,6 +65,74 @@ async function addMissingColumns() {
       console.log('✅ last_login_at column already exists');
     }
 
+    // ============ Notifications Table Migration ============
+    console.log('🔍 Checking notifications table structure...');
+    const notificationColumns = await prisma.$queryRaw`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'notifications'
+    `;
+
+    const notifColumnNames = notificationColumns.map((row) => row.column_name);
+    console.log('📋 Existing notification columns:', notifColumnNames.join(', '));
+
+    // Add data column if missing
+    if (!notifColumnNames.includes('data')) {
+      console.log('➕ Adding data column to notifications...');
+      await prisma.$executeRaw`ALTER TABLE "notifications" ADD COLUMN "data" JSONB`;
+      console.log('✅ Added data column');
+    } else {
+      console.log('✅ data column already exists');
+    }
+
+    // Add related_user_id column if missing
+    if (!notifColumnNames.includes('related_user_id')) {
+      console.log('➕ Adding related_user_id column to notifications...');
+      await prisma.$executeRaw`ALTER TABLE "notifications" ADD COLUMN "related_user_id" TEXT`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "notifications_related_user_id_idx" ON "notifications"("related_user_id")`;
+      console.log('✅ Added related_user_id column');
+    } else {
+      console.log('✅ related_user_id column already exists');
+    }
+
+    // Add related_item_id column if missing
+    if (!notifColumnNames.includes('related_item_id')) {
+      console.log('➕ Adding related_item_id column to notifications...');
+      await prisma.$executeRaw`ALTER TABLE "notifications" ADD COLUMN "related_item_id" TEXT`;
+      console.log('✅ Added related_item_id column');
+    } else {
+      console.log('✅ related_item_id column already exists');
+    }
+
+    // Add foreign key constraint if not exists
+    console.log('🔗 Checking foreign key constraint...');
+    const fkExists = await prisma.$queryRaw`
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'notifications_related_user_id_fkey'
+    `;
+
+    if (fkExists.length === 0) {
+      console.log('➕ Adding foreign key constraint...');
+      await prisma.$executeRaw`
+        ALTER TABLE "notifications"
+        ADD CONSTRAINT "notifications_related_user_id_fkey"
+        FOREIGN KEY ("related_user_id") REFERENCES "users"("id")
+        ON DELETE CASCADE ON UPDATE CASCADE
+      `;
+      console.log('✅ Added foreign key constraint');
+    } else {
+      console.log('✅ Foreign key constraint already exists');
+    }
+
+    // Drop old action_data column if exists
+    if (notifColumnNames.includes('action_data')) {
+      console.log('🗑️ Dropping old action_data column...');
+      await prisma.$executeRaw`ALTER TABLE "notifications" DROP COLUMN "action_data"`;
+      console.log('✅ Dropped action_data column');
+    } else {
+      console.log('✅ action_data column already removed');
+    }
+
     // Generate Prisma Client
     console.log('🔄 Generating Prisma Client...');
     const { execSync } = require('child_process');
