@@ -44,11 +44,12 @@ class NotificationRepository {
   /**
    * Create notification
    */
-  async create(userId, type, data, relatedUserId = null, relatedItemId = null) {
+  async create(userId, type, title, data, relatedUserId = null, relatedItemId = null) {
     return await prisma.notification.create({
       data: {
         userId,
         type,
+        title,
         data,
         relatedUserId,
         relatedItemId,
@@ -102,6 +103,7 @@ class NotificationRepository {
     return await this.create(
       receiverId,
       'friend_request',
+      'New Friend Request',
       {
         message: 'sent you a friend request',
       },
@@ -117,6 +119,7 @@ class NotificationRepository {
     return await this.create(
       senderId,
       'friend_accepted',
+      'Friend Request Accepted',
       {
         message: 'accepted your friend request',
       },
@@ -132,6 +135,7 @@ class NotificationRepository {
     return await this.create(
       photoOwnerId,
       'reaction',
+      'New Reaction',
       {
         message: `reacted ${emoji} to your photo`,
         emoji,
