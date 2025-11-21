@@ -65,8 +65,9 @@ class NotificationService {
   async markAsRead(notificationId, userId) {
     const notification = await notificationRepository.findById(notificationId);
 
+    // If notification not found (e.g., temporary frontend ID), silently succeed
     if (!notification) {
-      throw new AppException('Notification not found', 404);
+      return { message: 'Notification marked as read' };
     }
 
     if (notification.userId !== userId) {
@@ -74,7 +75,8 @@ class NotificationService {
     }
 
     if (notification.isRead) {
-      throw new AppException('Notification is already read', 400);
+      // Already read, just return success
+      return { message: 'Notification marked as read' };
     }
 
     await notificationRepository.markAsRead(notificationId);
@@ -100,8 +102,9 @@ class NotificationService {
   async deleteNotification(notificationId, userId) {
     const notification = await notificationRepository.findById(notificationId);
 
+    // If notification not found (e.g., temporary frontend ID), silently succeed
     if (!notification) {
-      throw new AppException('Notification not found', 404);
+      return { message: 'Notification deleted' };
     }
 
     if (notification.userId !== userId) {

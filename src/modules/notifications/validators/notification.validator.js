@@ -19,7 +19,7 @@ const getNotificationsQuerySchema = Joi.object({
  * Notification ID param validation
  */
 const notificationIdSchema = Joi.object({
-  id: Joi.string().uuid().required(),
+  id: Joi.string().required(),
 });
 
 module.exports = {
