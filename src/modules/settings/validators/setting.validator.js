@@ -16,7 +16,7 @@ const updateSettingsSchema = Joi.object({
   photo_quality: Joi.string().valid('high', 'medium', 'low').optional(),
   theme: Joi.string().valid('system', 'light', 'dark').optional(),
   language: Joi.string().valid('vi', 'en').optional(),
-  allow_photos_from: Joi.string().valid('everyone', 'friends_only', 'none').optional(),
+  allow_photos_from: Joi.string().valid('everyone', 'all', 'friends_only', 'none').optional(),
   hide_from_suggestions: Joi.boolean().optional(),
 }).min(1); // At least one field must be provided
 
