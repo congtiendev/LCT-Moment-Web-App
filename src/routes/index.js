@@ -20,11 +20,11 @@ router.get('/health', (req, res) => {
 
 // Module routes
 router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
 router.use('/mail', mailRoutes);
 router.use('/photos', photoRoutes);
 router.use('/api', friendRoutes);
 router.use('/api', notificationRoutes);
-router.use('/api', settingRoutes);
+router.use('/', settingRoutes);
+router.use('/users', userRoutes); // Must be last to avoid conflicts
 
 module.exports = router;
