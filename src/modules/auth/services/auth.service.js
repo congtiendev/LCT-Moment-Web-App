@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const AppException = require('@exceptions/app.exception');
 const { hashPassword, comparePassword } = require('@utils/crypto');
 const tokenService = require('./token.service');
+const { app } = require('@config');
 
 const prisma = new PrismaClient();
 
@@ -96,6 +97,8 @@ class AuthService {
         id: true,
         email: true,
         name: true,
+        bio: true,
+        phone: true,
         avatar: true,
         username: true,
         provider: true,
@@ -108,6 +111,11 @@ class AuthService {
 
     if (!user) {
       throw new AppException('User not found', 404);
+    }
+
+    // Transform avatar to full URL
+    if (user.avatar && !user.avatar.startsWith('http')) {
+      user.avatar = `${app.appUrl}${user.avatar}`;
     }
 
     return user;
