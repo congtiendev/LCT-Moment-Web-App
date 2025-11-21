@@ -22,8 +22,8 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/mail', mailRoutes);
 router.use('/photos', photoRoutes);
-router.use('/api', friendRoutes);
-router.use('/api', notificationRoutes);
+router.use('/', friendRoutes);
+router.use('/', notificationRoutes);
 router.use('/', settingRoutes);
 router.use('/users', userRoutes); // Must be last to avoid conflicts
 
