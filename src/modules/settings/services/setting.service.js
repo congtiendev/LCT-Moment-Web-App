@@ -18,12 +18,13 @@ class SettingService {
 
     return {
       notifications_enabled: settings.notificationsEnabled,
-      friend_request_notifications: settings.friendRequestNotifications,
-      photo_reaction_notifications: settings.photoReactionNotifications,
-      comment_notifications: settings.commentNotifications,
-      privacy_level: settings.privacyLevel,
-      show_online_status: settings.showOnlineStatus,
-      allow_friend_requests: settings.allowFriendRequests,
+      sound_enabled: settings.soundEnabled,
+      auto_save_photos: settings.autoSavePhotos,
+      photo_quality: settings.photoQuality,
+      theme: settings.theme,
+      language: settings.language,
+      allow_photos_from: settings.allowPhotosFrom,
+      hide_from_suggestions: settings.hideFromSuggestions,
     };
   }
 
@@ -33,38 +34,43 @@ class SettingService {
   async updateSettings(userId, data) {
     const updateData = {};
 
+    // Map snake_case to camelCase for Prisma
     if (data.notifications_enabled !== undefined) {
       updateData.notificationsEnabled = data.notifications_enabled;
     }
-    if (data.friend_request_notifications !== undefined) {
-      updateData.friendRequestNotifications = data.friend_request_notifications;
+    if (data.sound_enabled !== undefined) {
+      updateData.soundEnabled = data.sound_enabled;
     }
-    if (data.photo_reaction_notifications !== undefined) {
-      updateData.photoReactionNotifications = data.photo_reaction_notifications;
+    if (data.auto_save_photos !== undefined) {
+      updateData.autoSavePhotos = data.auto_save_photos;
     }
-    if (data.comment_notifications !== undefined) {
-      updateData.commentNotifications = data.comment_notifications;
+    if (data.photo_quality !== undefined) {
+      updateData.photoQuality = data.photo_quality;
     }
-    if (data.privacy_level !== undefined) {
-      updateData.privacyLevel = data.privacy_level;
+    if (data.theme !== undefined) {
+      updateData.theme = data.theme;
     }
-    if (data.show_online_status !== undefined) {
-      updateData.showOnlineStatus = data.show_online_status;
+    if (data.language !== undefined) {
+      updateData.language = data.language;
     }
-    if (data.allow_friend_requests !== undefined) {
-      updateData.allowFriendRequests = data.allow_friend_requests;
+    if (data.allow_photos_from !== undefined) {
+      updateData.allowPhotosFrom = data.allow_photos_from;
+    }
+    if (data.hide_from_suggestions !== undefined) {
+      updateData.hideFromSuggestions = data.hide_from_suggestions;
     }
 
     const settings = await settingRepository.updateSettings(userId, updateData);
 
     return {
       notifications_enabled: settings.notificationsEnabled,
-      friend_request_notifications: settings.friendRequestNotifications,
-      photo_reaction_notifications: settings.photoReactionNotifications,
-      comment_notifications: settings.commentNotifications,
-      privacy_level: settings.privacyLevel,
-      show_online_status: settings.showOnlineStatus,
-      allow_friend_requests: settings.allowFriendRequests,
+      sound_enabled: settings.soundEnabled,
+      auto_save_photos: settings.autoSavePhotos,
+      photo_quality: settings.photoQuality,
+      theme: settings.theme,
+      language: settings.language,
+      allow_photos_from: settings.allowPhotosFrom,
+      hide_from_suggestions: settings.hideFromSuggestions,
     };
   }
 }

@@ -86,25 +86,31 @@ model User {
   @@map("users")
 }
 
-// 2. USER SETTINGS TABLE (14 columns)
+// 2. USER SETTINGS TABLE
 model UserSettings {
   id        String   @id @default(uuid())
   userId    String   @unique @map("user_id")
 
+  // General settings
+  notificationsEnabled Boolean @default(true) @map("notifications_enabled")
+  soundEnabled         Boolean @default(true) @map("sound_enabled")
+  autoSavePhotos       Boolean @default(false) @map("auto_save_photos")
+  photoQuality         String  @default("high") @map("photo_quality") // high, medium, low
+  theme                String  @default("system") // system, light, dark
+  language             String  @default("vi") // vi, en
+
   // Privacy settings
-  isPrivate         Boolean  @default(false) @map("is_private")
-  allowFriendPhotos Boolean  @default(true) @map("allow_friend_photos")
+  isPrivate           Boolean @default(false) @map("is_private")
+  allowPhotosFrom     String  @default("friends_only") @map("allow_photos_from") // everyone, friends_only, none
+  hideFromSuggestions Boolean @default(false) @map("hide_from_suggestions")
+  allowFriendPhotos   Boolean @default(true) @map("allow_friend_photos")
 
-  // Notification settings
-  notifyFriendRequest Boolean  @default(true) @map("notify_friend_request")
-  notifyPhotoUploaded Boolean  @default(true) @map("notify_photo_uploaded")
-  notifyReaction      Boolean  @default(true) @map("notify_reaction")
-  notifyMessage       Boolean  @default(true) @map("notify_message")
-  notifyEmail         Boolean  @default(false) @map("notify_email")
-
-  // Display settings
-  language String   @default("en")
-  theme    String   @default("light")
+  // Notification preferences
+  notifyFriendRequest Boolean @default(true) @map("notify_friend_request")
+  notifyPhotoUploaded Boolean @default(true) @map("notify_photo_uploaded")
+  notifyReaction      Boolean @default(true) @map("notify_reaction")
+  notifyMessage       Boolean @default(true) @map("notify_message")
+  notifyEmail         Boolean @default(false) @map("notify_email")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

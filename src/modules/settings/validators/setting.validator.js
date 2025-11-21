@@ -11,14 +11,35 @@ const validate = require('@middlewares/validate.middleware');
  */
 const updateSettingsSchema = Joi.object({
   notifications_enabled: Joi.boolean().optional(),
-  friend_request_notifications: Joi.boolean().optional(),
-  photo_reaction_notifications: Joi.boolean().optional(),
-  comment_notifications: Joi.boolean().optional(),
-  privacy_level: Joi.string().valid('public', 'friends', 'private').optional(),
-  show_online_status: Joi.boolean().optional(),
-  allow_friend_requests: Joi.boolean().optional(),
+  sound_enabled: Joi.boolean().optional(),
+  auto_save_photos: Joi.boolean().optional(),
+  photo_quality: Joi.string().valid('high', 'medium', 'low').optional(),
+  theme: Joi.string().valid('system', 'light', 'dark').optional(),
+  language: Joi.string().valid('vi', 'en').optional(),
+  allow_photos_from: Joi.string().valid('everyone', 'friends_only', 'none').optional(),
+  hide_from_suggestions: Joi.boolean().optional(),
 }).min(1); // At least one field must be provided
+
+/**
+ * Update profile validation
+ */
+const updateProfileSchema = Joi.object({
+  name: Joi.string().min(1).max(100).optional(),
+  bio: Joi.string().max(500).allow('').optional(),
+}).min(1); // At least one field must be provided
+
+/**
+ * Delete account validation
+ */
+const deleteAccountSchema = Joi.object({
+  confirmation: Joi.string().valid('DELETE MY ACCOUNT').required().messages({
+    'any.only': 'Please confirm with: "DELETE MY ACCOUNT"',
+    'any.required': 'Confirmation is required',
+  }),
+});
 
 module.exports = {
   validateUpdateSettings: validate(updateSettingsSchema, 'body'),
+  validateUpdateProfile: validate(updateProfileSchema, 'body'),
+  validateDeleteAccount: validate(deleteAccountSchema, 'body'),
 };

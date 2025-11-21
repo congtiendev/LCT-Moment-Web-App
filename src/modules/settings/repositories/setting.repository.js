@@ -10,7 +10,7 @@ class SettingRepository {
    * Get user settings
    */
   async getSettings(userId) {
-    return await prisma.userSetting.findUnique({
+    return await prisma.userSettings.findUnique({
       where: { userId },
     });
   }
@@ -19,16 +19,10 @@ class SettingRepository {
    * Create default settings for new user
    */
   async createDefaultSettings(userId) {
-    return await prisma.userSetting.create({
+    return await prisma.userSettings.create({
       data: {
         userId,
-        notificationsEnabled: true,
-        friendRequestNotifications: true,
-        photoReactionNotifications: true,
-        commentNotifications: true,
-        privacyLevel: 'friends',
-        showOnlineStatus: true,
-        allowFriendRequests: true,
+        // Defaults are already set in Prisma schema
       },
     });
   }
@@ -39,7 +33,7 @@ class SettingRepository {
   async updateSettings(userId, data) {
     // Try to update first
     try {
-      return await prisma.userSetting.update({
+      return await prisma.userSettings.update({
         where: { userId },
         data,
       });
@@ -47,7 +41,7 @@ class SettingRepository {
       // If settings don't exist, create them with defaults and then update
       if (error.code === 'P2025') {
         await this.createDefaultSettings(userId);
-        return await prisma.userSetting.update({
+        return await prisma.userSettings.update({
           where: { userId },
           data,
         });

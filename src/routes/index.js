@@ -23,8 +23,8 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/mail', mailRoutes);
 router.use('/photos', photoRoutes);
-router.use('/', friendRoutes);
-router.use('/', notificationRoutes);
-router.use('/', settingRoutes);
+router.use('/api', friendRoutes);
+router.use('/api', notificationRoutes);
+router.use('/api', settingRoutes);
 
 module.exports = router;
