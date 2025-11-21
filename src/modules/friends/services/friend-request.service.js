@@ -87,11 +87,14 @@ class FriendRequestService {
       throw new AppException('You are already friends with this user', 400);
     }
 
-    // Check if request already exists
+    // Check if pending request already exists
     const requestExists = await friendRequestRepository.requestExists(senderId, receiverId);
     if (requestExists) {
       throw new AppException('Friend request already exists', 400);
     }
+
+    // Delete old rejected/cancelled requests before creating new one
+    await friendRequestRepository.deleteOldRequests(senderId, receiverId);
 
     const request = await friendRequestRepository.create(senderId, receiverId, message);
 

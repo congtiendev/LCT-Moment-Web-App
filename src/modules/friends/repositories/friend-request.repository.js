@@ -153,6 +153,20 @@ class FriendRequestRepository {
       where: { id: requestId },
     });
   }
+
+  /**
+   * Delete old rejected/cancelled requests between two users
+   */
+  async deleteOldRequests(senderId, receiverId) {
+    return await prisma.friendRequest.deleteMany({
+      where: {
+        OR: [
+          { senderId, receiverId, status: { in: ['rejected', 'cancelled'] } },
+          { senderId: receiverId, receiverId: senderId, status: { in: ['rejected', 'cancelled'] } },
+        ],
+      },
+    });
+  }
 }
 
 module.exports = new FriendRequestRepository();
