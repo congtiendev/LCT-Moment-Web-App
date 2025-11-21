@@ -21,10 +21,10 @@ router.get('/health', (req, res) => {
 // Module routes
 router.use('/auth', authRoutes);
 router.use('/mail', mailRoutes);
+router.use('/', settingRoutes); // Must be before /photos to handle /photos/all
 router.use('/photos', photoRoutes);
 router.use('/', friendRoutes);
 router.use('/', notificationRoutes);
-router.use('/', settingRoutes);
 router.use('/users', userRoutes); // Must be last to avoid conflicts
 
 module.exports = router;
