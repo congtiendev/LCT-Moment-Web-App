@@ -9,9 +9,10 @@ class UserRepository {
     });
   }
 
-  async findById(id) {
+  async findById(id, select = null) {
     return prisma.user.findUnique({
       where: { id },
+      select,
     });
   }
 
