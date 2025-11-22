@@ -155,14 +155,15 @@ class FriendRequestRepository {
   }
 
   /**
-   * Delete old rejected requests between two users
+   * Delete old non-pending requests between two users
+   * This allows resending friend requests after rejection
    */
   async deleteOldRequests(senderId, receiverId) {
     return await prisma.friendRequest.deleteMany({
       where: {
         OR: [
-          { senderId, receiverId, status: 'rejected' },
-          { senderId: receiverId, receiverId: senderId, status: 'rejected' },
+          { senderId, receiverId, status: { not: 'pending' } },
+          { senderId: receiverId, receiverId: senderId, status: { not: 'pending' } },
         ],
       },
     });
