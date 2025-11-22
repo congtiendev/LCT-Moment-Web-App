@@ -120,6 +120,14 @@ class FriendRequestRepository {
         status: 'pending',
       },
       include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+          },
+        },
         receiver: {
           select: {
             id: true,
